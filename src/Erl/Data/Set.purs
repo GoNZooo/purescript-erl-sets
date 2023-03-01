@@ -19,6 +19,12 @@ import Erl.Data.List as List
 -- | An Erlang set as created by the `sets` module with the `{version, 2}` option passed.
 foreign import data Set :: Type -> Type
 
+instance eqSet :: Eq a => Eq (Set a) where
+  eq set1 set2 = eq_ set1 set2
+
+instance showSet :: Show a => Show (Set a) where
+  show set = "fromFoldable " <> show (toUnfoldable set :: Array a)
+
 fromFoldable :: forall f a. Foldable f => Eq a => f a -> Set a
 fromFoldable = List.fromFoldable >>> fromList_
 
@@ -50,3 +56,5 @@ foreign import isEmpty_ :: forall a. Set a -> Boolean
 foreign import singleton_ :: forall a. a -> Set a
 
 foreign import toList_ :: forall a. Set a -> List a
+
+foreign import eq_ :: forall a. Set a -> Set a -> Boolean

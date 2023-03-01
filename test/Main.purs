@@ -16,9 +16,13 @@ main :: Effect Unit
 main = do
   void $ EUnit.runTests do
     suite "set operations" do
-      test "`empty`" do
+      test "`empty` & `isEmpty`" do
         assertEqual { actual: (Set.empty :: Set Int) # Set.toUnfoldable, expected: [] }
+        assertEqual { actual: (Set.empty :: Set Int) # Set.isEmpty, expected: true }
+
+        quickCheck \(x :: Int) -> do
+          (x # Set.singleton # Set.isEmpty) === false
 
       test "`singleton`" do
         quickCheck \(x :: Int) -> do
-          (x # Set.singleton # Set.toUnfoldable) === [ x ]
+          Set.singleton x === Set.fromFoldable [ x ]
