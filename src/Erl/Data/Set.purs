@@ -11,6 +11,7 @@ module Erl.Data.Set
   , union
   , union'
   , insert
+  , delete
   ) where
 
 import Prelude
@@ -73,6 +74,10 @@ union' sets = union_ sets
 insert :: forall a. Eq a => a -> Set a -> Set a
 insert a s = insert_ a s
 
+-- | Removes an element from a set.
+delete :: forall a. Eq a => a -> Set a -> Set a
+delete a s = delete_ a s
+
 fromFoldable :: forall f a. Foldable f => Eq a => f a -> Set a
 fromFoldable = List.fromFoldable >>> fromList_
 
@@ -94,3 +99,5 @@ foreign import eq_ :: forall a. Set a -> Set a -> Boolean
 foreign import union_ :: forall a. List (Set a) -> Set a
 
 foreign import insert_ :: forall a. a -> Set a -> Set a
+
+foreign import delete_ :: forall a. a -> Set a -> Set a

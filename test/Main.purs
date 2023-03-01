@@ -77,3 +77,10 @@ main = do
             , (xs # Set.insert x # Set.insert x) === Set.union (Set.singleton x) xs
             , (xs # Set.insert x # Set.insert x # Set.insert x) === Set.insert x xs
             ]
+
+      test "`delete`" do
+        quickCheck \(xs :: Set Int) (x :: Int) -> do
+          Properties
+            [ (xs # Set.insert x # Set.delete x) === xs
+            , (xs # Set.delete x # Set.delete x) === xs
+            ]
