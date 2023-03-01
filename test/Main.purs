@@ -110,3 +110,14 @@ main = do
         quickCheck \(xs :: Set Int) (ys :: Set Int) -> do
           Set.difference ys (xs <> ys) === xs
 
+      test "`intersection`" do
+        quickCheck \(xs :: Set Int) -> do
+          Set.intersection xs xs === xs
+
+        quickCheck \(xs :: Set Int) (ys :: Set Int) -> do
+          Set.intersection xs ys === Set.intersection ys xs
+
+        quickCheck \(xs :: Set Int) (ys :: Set Int) (zs :: Set Int) -> do
+          Set.intersection xs (Set.intersection ys zs) ===
+            Set.intersection (Set.intersection xs ys) zs
+

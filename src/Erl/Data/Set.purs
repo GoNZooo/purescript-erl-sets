@@ -14,6 +14,7 @@ module Erl.Data.Set
   , delete
   , filter
   , difference
+  , intersection
   ) where
 
 import Prelude
@@ -91,6 +92,10 @@ filter p s = s # toList # List.filter p # fromList
 difference :: forall a. Set a -> Set a -> Set a
 difference s1 s2 = difference_ s1 s2
 
+-- | Creates a set from the intersection of two sets.
+intersection :: forall a. Set a -> Set a -> Set a
+intersection s1 s2 = intersection_ s1 s2
+
 fromFoldable :: forall f a. Foldable f => f a -> Set a
 fromFoldable = List.fromFoldable >>> fromList_
 
@@ -116,3 +121,5 @@ foreign import insert_ :: forall a. a -> Set a -> Set a
 foreign import delete_ :: forall a. a -> Set a -> Set a
 
 foreign import difference_ :: forall a. Set a -> Set a -> Set a
+
+foreign import intersection_ :: forall a. Set a -> Set a -> Set a
