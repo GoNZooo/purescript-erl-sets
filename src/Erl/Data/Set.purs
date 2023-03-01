@@ -9,12 +9,13 @@ module Erl.Data.Set
   , toList
   , fromList
   , union
-  , union'
+  , unions
   , insert
   , delete
   , filter
   , difference
   , intersection
+  , member
   ) where
 
 import Prelude
@@ -73,8 +74,8 @@ union :: forall a. Set a -> Set a -> Set a
 union s1 s2 = union_ (s1 : s2 : nil)
 
 -- | Creates the union of all sets in a list.
-union' :: forall a. List (Set a) -> Set a
-union' sets = union_ sets
+unions :: forall a. List (Set a) -> Set a
+unions sets = union_ sets
 
 -- | Adds an element to a set.
 insert :: forall a. a -> Set a -> Set a
@@ -91,6 +92,10 @@ filter p s = s # toList # List.filter p # fromList
 -- | Creates a set with all elements in `s2` that are not in `s1`.
 difference :: forall a. Set a -> Set a -> Set a
 difference s1 s2 = difference_ s1 s2
+
+-- | Checks if an element is in a set.
+member :: forall a. a -> Set a -> Boolean
+member a s = member_ a s
 
 -- | Creates a set from the intersection of two sets.
 intersection :: forall a. Set a -> Set a -> Set a
@@ -123,3 +128,5 @@ foreign import delete_ :: forall a. a -> Set a -> Set a
 foreign import difference_ :: forall a. Set a -> Set a -> Set a
 
 foreign import intersection_ :: forall a. Set a -> Set a -> Set a
+
+foreign import member_ :: forall a. a -> Set a -> Boolean

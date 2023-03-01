@@ -1,7 +1,7 @@
 -module(erl_data_set@foreign).
 
 -export([fromList_/1, empty_/0, isEmpty_/1, singleton_/1, toList_/1, eq_/2, union_/1,
-         insert_/2, delete_/2, difference_/2, intersection_/2]).
+         insert_/2, delete_/2, difference_/2, intersection_/2, member_/2]).
 
 fromList_(L) ->
   sets:from_list(L, [{version, 2}]).
@@ -35,3 +35,6 @@ difference_(S1, S2) ->
 
 intersection_(S1, S2) ->
   sets:intersection(S1, S2).
+
+member_(E, S) ->
+  sets:is_element(E, S).

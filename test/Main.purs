@@ -5,7 +5,6 @@ module Test.Main
 import Prelude
 
 import Data.Array as Array
-import Data.Foldable (foldl)
 import Effect (Effect)
 import Erl.Data.List (nil, (:))
 import Erl.Data.Set (Set)
@@ -13,16 +12,8 @@ import Erl.Data.Set as Set
 import Erl.Test.EUnit (suite, test)
 import Erl.Test.EUnit as EUnit
 import Test.Assert (assertEqual)
-import Test.QuickCheck (class Testable, Result(..), quickCheck, (===))
-
-newtype Properties = Properties (Array Result)
-
-instance Testable Properties where
-  test (Properties results) = do
-    pure $ foldl keepFailure Success results
-    where
-    keepFailure _oldResult (Failed reason) = Failed reason
-    keepFailure oldResult _newResult = oldResult
+import Test.QuickCheck ((===))
+import Test.QuickCheck.Helpers (Properties(..), property)
 
 main :: Effect Unit
 main = do
@@ -32,47 +23,44 @@ main = do
         assertEqual { actual: (Set.empty :: Set Int) # Set.toUnfoldable, expected: [] }
         assertEqual { actual: (Set.empty :: Set Int) # Set.isEmpty, expected: true }
 
-        quickCheck \(x :: Int) -> do
+        property "Sets created with `singleton` are never empty" \(x :: Int) -> do
           (x # Set.singleton # Set.isEmpty) === false
 
       test "`singleton`" do
-        quickCheck \(x :: Int) -> do
+        property "`singleton` is the same as `fromFoldable` with one element" \(x :: Int) -> do
           Set.singleton x === Set.fromFoldable [ x ]
 
       test "`union` & `union'`" do
-        quickCheck \(xs :: Set Int) -> do
+        property "The union of two identical sets is `identity`" \(xs :: Set Int) -> do
           Set.union xs xs === xs
 
-        quickCheck \(xs :: Set Int) (ys :: Set Int) -> do
+        property "Argument order does not matter for `union`" \(xs :: Set Int) (ys :: Set Int) -> do
           Set.union xs ys === Set.union ys xs
 
-        quickCheck \(xs :: Set Int) (ys :: Set Int) (zs :: Set Int) -> do
+        property "Associativity for `union`" \(xs :: Set Int) (ys :: Set Int) (zs :: Set Int) -> do
           Set.union xs (Set.union ys zs) === Set.union (Set.union xs ys) zs
 
-        quickCheck \(xs :: Set Int) (ys :: Set Int) -> do
-          Set.union xs ys === Set.union' (xs : ys : nil)
+        property "`union` works the same as `unions`" \(xs :: Set Int) (ys :: Set Int) -> do
+          Set.union xs ys === Set.unions (xs : ys : nil)
 
       test "`Semigroup` & `Monoid`" do
-        quickCheck \(xs :: Set Int) -> do
+        property "Appending the same set together with itself is `identity`" \(xs :: Set Int) -> do
           xs <> xs === xs
 
-        quickCheck \(xs :: Set Int) (ys :: Set Int) -> do
+        property "Argument order does not matter for `<>`" \(xs :: Set Int) (ys :: Set Int) -> do
           xs <> ys === ys <> xs
 
-        quickCheck \(xs :: Set Int) (ys :: Set Int) (zs :: Set Int) -> do
+        property "Associativity" \(xs :: Set Int) (ys :: Set Int) (zs :: Set Int) -> do
           xs <> (ys <> zs) === (xs <> ys) <> zs
 
-        quickCheck \(xs :: Set Int) (ys :: Set Int) -> do
-          xs <> ys === ys <> xs
-
-        quickCheck \(xs :: Set Int) -> do
+        property "Left identity" \(xs :: Set Int) -> do
           mempty <> xs === xs
 
-        quickCheck \(xs :: Set Int) -> do
+        property "Right identity" \(xs :: Set Int) -> do
           xs <> mempty === xs
 
       test "`insert`" do
-        quickCheck \(xs :: Set Int) (x :: Int) -> do
+        property "Element insertion is idempotent" \(xs :: Set Int) (x :: Int) -> do
           Properties
             [ Set.insert x xs === Set.union (Set.singleton x) xs
             , (xs # Set.insert x # Set.insert x) === Set.union (Set.singleton x) xs
@@ -80,44 +68,50 @@ main = do
             ]
 
       test "`delete`" do
-        quickCheck \(xs :: Set Int) (x :: Int) -> do
+        property "Element deletion is idempotent" \(xs :: Set Int) (x :: Int) -> do
           Properties
             [ (xs # Set.insert x # Set.delete x) === xs
             , (xs # Set.delete x # Set.delete x) === xs
             ]
 
       test "`filter`" do
-        quickCheck \(xs :: Array Int) -> do
+        property "Always returning `true` keeps all elements" \(xs :: Array Int) -> do
           (xs # Set.fromFoldable # Set.filter (const true)) === Set.fromFoldable xs
 
-        quickCheck \(xs :: Array Int) -> do
+        property "Filtering works like for arrays" \(xs :: Array Int) -> do
           (xs # Set.fromFoldable # Set.filter (_ > 0)) ===
             (xs # Array.filter (_ > 0) # Set.fromFoldable)
 
-        quickCheck \(xs :: Set Int) -> do
+        property "Always returning `false` yields the empty set" \(xs :: Set Int) -> do
           Set.filter (const false) xs === Set.empty
 
       test "`difference`" do
-        quickCheck \(xs :: Set Int) -> do
+        property "The difference between a set and itself is the empty set" \(xs :: Set Int) -> do
           Set.difference xs xs === Set.empty
 
-        quickCheck \(xs :: Set Int) (ys :: Set Int) -> do
-          Set.difference xs ys === Set.difference xs (Set.union xs ys)
+        property "The difference between `xs` and `xs <> ys` is `ys`"
+          \(xs :: Set Int) (ys :: Set Int) -> do
+            Set.difference xs (xs <> ys) === ys
 
-        quickCheck \(xs :: Set Int) (ys :: Set Int) -> do
-          Set.difference xs (xs <> ys) === ys
-
-        quickCheck \(xs :: Set Int) (ys :: Set Int) -> do
-          Set.difference ys (xs <> ys) === xs
+        property "The difference between `ys` and `xs <> ys` is `xs`"
+          \(xs :: Set Int) (ys :: Set Int) -> do
+            Set.difference ys (xs <> ys) === xs
 
       test "`intersection`" do
-        quickCheck \(xs :: Set Int) -> do
+        property "The intersection of `xs` and `xs` is `identity`" \(xs :: Set Int) -> do
           Set.intersection xs xs === xs
 
-        quickCheck \(xs :: Set Int) (ys :: Set Int) -> do
-          Set.intersection xs ys === Set.intersection ys xs
+        property "Argument order does not matter for `intersection`"
+          \(xs :: Set Int) (ys :: Set Int) -> do
+            Set.intersection xs ys === Set.intersection ys xs
 
-        quickCheck \(xs :: Set Int) (ys :: Set Int) (zs :: Set Int) -> do
+        property "Associativity" \(xs :: Set Int) (ys :: Set Int) (zs :: Set Int) -> do
           Set.intersection xs (Set.intersection ys zs) ===
             Set.intersection (Set.intersection xs ys) zs
 
+      test "`member`" do
+        property "Inserted elements are members of a set" \(xs :: Set Int) (x :: Int) -> do
+          (xs # Set.insert x # Set.member x) === true
+
+        property "Deleted elements are not members of a set" \(xs :: Set Int) (x :: Int) -> do
+          (xs # Set.delete x # Set.member x) === false
