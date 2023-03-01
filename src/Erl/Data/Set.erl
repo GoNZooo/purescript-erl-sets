@@ -1,6 +1,7 @@
 -module(erl_data_set@foreign).
 
--export([fromList_/1, empty_/0, isEmpty_/1, singleton_/1, toList_/1, eq_/2, union_/1]).
+-export([fromList_/1, empty_/0, isEmpty_/1, singleton_/1, toList_/1, eq_/2, union_/1,
+         insert_/2]).
 
 fromList_(L) ->
   sets:from_list(L, [{version, 2}]).
@@ -22,3 +23,6 @@ eq_(S1, S2) ->
 
 union_(Sets) ->
   sets:union(Sets).
+
+insert_(E, S) ->
+  sets:add_element(E, S).

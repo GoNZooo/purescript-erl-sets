@@ -4,6 +4,7 @@ module Test.Main
 
 import Prelude
 
+import Data.Foldable (foldl)
 import Effect (Effect)
 import Erl.Data.List (nil, (:))
 import Erl.Data.Set (Set)
@@ -11,7 +12,16 @@ import Erl.Data.Set as Set
 import Erl.Test.EUnit (suite, test)
 import Erl.Test.EUnit as EUnit
 import Test.Assert (assertEqual)
-import Test.QuickCheck (quickCheck, (===))
+import Test.QuickCheck (class Testable, Result(..), quickCheck, (===))
+
+newtype Properties = Properties (Array Result)
+
+instance Testable Properties where
+  test (Properties results) = do
+    pure $ foldl keepFailure Success results
+    where
+    keepFailure _oldResult (Failed reason) = Failed reason
+    keepFailure oldResult _newResult = oldResult
 
 main :: Effect Unit
 main = do
@@ -59,3 +69,11 @@ main = do
 
         quickCheck \(xs :: Set Int) -> do
           xs <> mempty === xs
+
+      test "`insert`" do
+        quickCheck \(xs :: Set Int) (x :: Int) -> do
+          Properties
+            [ Set.insert x xs === Set.union (Set.singleton x) xs
+            , (xs # Set.insert x # Set.insert x) === Set.union (Set.singleton x) xs
+            , (xs # Set.insert x # Set.insert x # Set.insert x) === Set.insert x xs
+            ]

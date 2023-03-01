@@ -10,6 +10,7 @@ module Erl.Data.Set
   , fromList
   , union
   , union'
+  , insert
   ) where
 
 import Prelude
@@ -40,12 +41,6 @@ instance semigroupSet :: Semigroup (Set a) where
 instance monoidSet :: Eq a => Monoid (Set a) where
   mempty = empty
 
-fromFoldable :: forall f a. Foldable f => Eq a => f a -> Set a
-fromFoldable = List.fromFoldable >>> fromList_
-
-toUnfoldable :: forall f a. Unfoldable f => Set a -> f a
-toUnfoldable = toList >>> List.toUnfoldable
-
 -- | Creates an empty set with `{version, 2}`.
 empty :: forall a. Eq a => Set a
 empty = empty_
@@ -58,13 +53,13 @@ isEmpty s = isEmpty_ s
 singleton :: forall a. Eq a => a -> Set a
 singleton a = singleton_ a
 
--- | Creates a list from a set.
-toList :: forall a. Set a -> List a
-toList s = toList_ s
-
 -- | Creates a set from a list.
 fromList :: forall a. Eq a => List a -> Set a
 fromList l = fromList_ l
+
+-- | Creates a list from a set.
+toList :: forall a. Set a -> List a
+toList s = toList_ s
 
 -- | Creates the union of two sets.
 union :: forall a. Set a -> Set a -> Set a
@@ -73,6 +68,16 @@ union s1 s2 = union_ (s1 : s2 : nil)
 -- | Creates the union of all sets in a list.
 union' :: forall a. List (Set a) -> Set a
 union' sets = union_ sets
+
+-- | Adds an element to a set.
+insert :: forall a. Eq a => a -> Set a -> Set a
+insert a s = insert_ a s
+
+fromFoldable :: forall f a. Foldable f => Eq a => f a -> Set a
+fromFoldable = List.fromFoldable >>> fromList_
+
+toUnfoldable :: forall f a. Unfoldable f => Set a -> f a
+toUnfoldable = toList >>> List.toUnfoldable
 
 foreign import fromList_ :: forall a. List a -> Set a
 
@@ -87,3 +92,5 @@ foreign import toList_ :: forall a. Set a -> List a
 foreign import eq_ :: forall a. Set a -> Set a -> Boolean
 
 foreign import union_ :: forall a. List (Set a) -> Set a
+
+foreign import insert_ :: forall a. a -> Set a -> Set a
