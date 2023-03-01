@@ -43,6 +43,9 @@ instance semigroupSet :: Semigroup (Set a) where
 instance monoidSet :: Monoid (Set a) where
   mempty = empty
 
+instance functorSet :: Functor Set where
+  map f s = s # toList # map f # fromList
+
 -- | Creates an empty set with `{version, 2}`.
 empty :: forall a. Set a
 empty = empty_
