@@ -1,6 +1,7 @@
 { name = "erl-sets"
 , dependencies =
-  [ "assert"
+  [ "arrays"
+  , "assert"
   , "effect"
   , "erl-lists"
   , "erl-test-eunit"

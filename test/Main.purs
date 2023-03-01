@@ -96,3 +96,17 @@ main = do
 
         quickCheck \(xs :: Set Int) -> do
           Set.filter (const false) xs === Set.empty
+
+      test "`difference`" do
+        quickCheck \(xs :: Set Int) -> do
+          Set.difference xs xs === Set.empty
+
+        quickCheck \(xs :: Set Int) (ys :: Set Int) -> do
+          Set.difference xs ys === Set.difference xs (Set.union xs ys)
+
+        quickCheck \(xs :: Set Int) (ys :: Set Int) -> do
+          Set.difference xs (xs <> ys) === ys
+
+        quickCheck \(xs :: Set Int) (ys :: Set Int) -> do
+          Set.difference ys (xs <> ys) === xs
+

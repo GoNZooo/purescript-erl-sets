@@ -13,6 +13,7 @@ module Erl.Data.Set
   , insert
   , delete
   , filter
+  , difference
   ) where
 
 import Prelude
@@ -86,6 +87,10 @@ delete a s = delete_ a s
 filter :: forall a. (a -> Boolean) -> Set a -> Set a
 filter p s = s # toList # List.filter p # fromList
 
+-- | Creates a set with all elements in `s2` that are not in `s1`.
+difference :: forall a. Set a -> Set a -> Set a
+difference s1 s2 = difference_ s1 s2
+
 fromFoldable :: forall f a. Foldable f => f a -> Set a
 fromFoldable = List.fromFoldable >>> fromList_
 
@@ -109,3 +114,5 @@ foreign import union_ :: forall a. List (Set a) -> Set a
 foreign import insert_ :: forall a. a -> Set a -> Set a
 
 foreign import delete_ :: forall a. a -> Set a -> Set a
+
+foreign import difference_ :: forall a. Set a -> Set a -> Set a
