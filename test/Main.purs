@@ -4,6 +4,7 @@ module Test.Main
 
 import Prelude
 
+import Data.Array as Array
 import Data.Foldable (foldl)
 import Effect (Effect)
 import Erl.Data.List (nil, (:))
@@ -84,3 +85,14 @@ main = do
             [ (xs # Set.insert x # Set.delete x) === xs
             , (xs # Set.delete x # Set.delete x) === xs
             ]
+
+      test "`filter`" do
+        quickCheck \(xs :: Array Int) -> do
+          (xs # Set.fromFoldable # Set.filter (const true)) === Set.fromFoldable xs
+
+        quickCheck \(xs :: Array Int) -> do
+          (xs # Set.fromFoldable # Set.filter (_ > 0)) ===
+            (xs # Array.filter (_ > 0) # Set.fromFoldable)
+
+        quickCheck \(xs :: Set Int) -> do
+          Set.filter (const false) xs === Set.empty

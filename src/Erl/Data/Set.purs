@@ -12,6 +12,7 @@ module Erl.Data.Set
   , union'
   , insert
   , delete
+  , filter
   ) where
 
 import Prelude
@@ -39,11 +40,11 @@ instance arbitrarySet :: (Arbitrary a, Eq a) => Arbitrary (Set a) where
 instance semigroupSet :: Semigroup (Set a) where
   append s1 s2 = union s1 s2
 
-instance monoidSet :: Eq a => Monoid (Set a) where
+instance monoidSet :: Monoid (Set a) where
   mempty = empty
 
 -- | Creates an empty set with `{version, 2}`.
-empty :: forall a. Eq a => Set a
+empty :: forall a. Set a
 empty = empty_
 
 -- | Tests if a set is empty.
@@ -51,11 +52,11 @@ isEmpty :: forall a. Set a -> Boolean
 isEmpty s = isEmpty_ s
 
 -- | Creates a set with one element.
-singleton :: forall a. Eq a => a -> Set a
+singleton :: forall a. a -> Set a
 singleton a = singleton_ a
 
 -- | Creates a set from a list.
-fromList :: forall a. Eq a => List a -> Set a
+fromList :: forall a. List a -> Set a
 fromList l = fromList_ l
 
 -- | Creates a list from a set.
@@ -71,14 +72,18 @@ union' :: forall a. List (Set a) -> Set a
 union' sets = union_ sets
 
 -- | Adds an element to a set.
-insert :: forall a. Eq a => a -> Set a -> Set a
+insert :: forall a. a -> Set a -> Set a
 insert a s = insert_ a s
 
 -- | Removes an element from a set.
-delete :: forall a. Eq a => a -> Set a -> Set a
+delete :: forall a. a -> Set a -> Set a
 delete a s = delete_ a s
 
-fromFoldable :: forall f a. Foldable f => Eq a => f a -> Set a
+-- | Filters a set, creating a new set whith all elements that satisfy the supplied predicate.
+filter :: forall a. (a -> Boolean) -> Set a -> Set a
+filter p s = s # toList # List.filter p # fromList
+
+fromFoldable :: forall f a. Foldable f => f a -> Set a
 fromFoldable = List.fromFoldable >>> fromList_
 
 toUnfoldable :: forall f a. Unfoldable f => Set a -> f a
